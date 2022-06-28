@@ -1,0 +1,29 @@
+{
+  "product": "Product",
+  "studio": "Studio",
+  "gallery": "Gallery",
+  "press": "Press",
+  "language": {
+    "en": "English",
+    "jp": "日本語",
+    "fr": "Français",
+    "de": "Deutsch",
+    "nl": "Nederlands",
+    "it": "Italiano",
+    "zh":"中文",
+    "ko":"한국어",
+    "ar": "عَرَبِيّ",
+    "es": "Español"
+  },
+  "countdown": {
+    "title": "Final unveiling <span class='font-semibold'>May 26th, 2021</span>.",
+    "desc1": "Each week we unveil new photos and specifications so don’t miss out.",
+    "desc2": "Sign up now for exclusive access and a one-time special discount.",
+    "button": "Get on the list"
+  },
+  "promotion": {
+    "text1": "UP TO 55% OFF FOR EARLY BIRD",
+    "text2": "We’re LIVE NOW on Indiegogo.",
+    "text3": "CHECK IT OUT!"
+  }
+}

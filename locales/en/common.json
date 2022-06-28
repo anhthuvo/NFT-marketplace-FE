@@ -1,0 +1,5 @@
+{
+  "h1": "A simple example",
+  "error-with-status": "A {{statusCode}} error occurred on server",
+  "title": "Home"
+}

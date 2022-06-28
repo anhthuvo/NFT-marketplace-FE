@@ -1,0 +1,4 @@
+AuthName "Dialog prompt"
+AuthType Basic
+AuthUserFile /app/public/.htpasswd
+Require valid-user
