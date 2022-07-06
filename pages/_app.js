@@ -1,20 +1,20 @@
-import { appWithTranslation } from 'next-i18next';
+import { appWithTranslation } from "next-i18next";
 
-import nextI18NextConfig from '../next-i18next.config.js';
-import ThemeProvider from '../styles/styledGlobal';
-import 'antd/dist/antd.css';
-import '../styles/tailwindGlobal.css';
-
-import Header from '../components/header';
-import Footer from '../components/footer';
+import nextI18NextConfig from "../next-i18next.config.js";
+import ThemeProvider from "../styles/styledGlobal";
+import "antd/dist/antd.css";
+import "../styles/tailwindGlobal.css";
+import ScrollProvider from 'store/useScroll';
+import Header from "../components/header";
 
 const App = ({ Component, pageProps }) => {
   return (
     <>
       <ThemeProvider>
-        <Header />
-        <Component {...pageProps} />
-        <Footer />
+        <ScrollProvider>
+          <Header />
+          <Component {...pageProps} />
+        </ScrollProvider>
       </ThemeProvider>
     </>
   );

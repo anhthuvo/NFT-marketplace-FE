@@ -6,7 +6,6 @@ module.exports = {
     fontSize: {
       xs: '.75rem',
       sm: '.875rem',
-      tiny: '.9375rem',
       base: '1rem',
       lg: '1.125rem',
       xl: '1.25rem',
@@ -34,11 +33,10 @@ module.exports = {
         secondary: '#d524e0',
         third: '#1f00fc',
         light: '#fcd8a4',
-        white: '#ffffff'
-      },
-      spacing: {
-        'full-180': '180%',
-        'full-200': '200%'
+        'light-50': 'rgb(252 216 164 / 50%)',
+        white: '#ffffff',
+        gray: 'gray',
+        violet: '#2b072d'
       },
       minWidth: {
         0: '0',

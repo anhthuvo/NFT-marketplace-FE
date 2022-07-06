@@ -19,6 +19,9 @@ export const DesktopMenu = styled.div`
   font-size: 1rem;
   font-weight: 500;
 
+  p{
+    cursor: pointer;
+  }
   p.active {
     color: ${({ theme }) => theme.colors.secondary};
   }
@@ -71,73 +74,9 @@ export const Header = styled.div`
     background: #ffffff;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.18);
   }
-  ${({ theme, locale, transparent, pathname, device, isHomePage }) => `
-    background-color: ${transparent ? 'transparent' : theme.colors['primary-50']};
-    a[href="${locale !== 'en' ? '/' + locale + pathname : pathname}"]{
-      color: ${theme.colors.primary};
-    }
-    ${Navigator} {
-      color: ${
-        !isHomePage && transparent && device === 'desktop' ? theme.colors.gray : theme.colors.light
-      };
-    }
-  `};
-  h1 {
-    svg {
-      width: 185px;
-    }
-  }
+  background-color: ${({theme}) => theme.colors['primary-50']};
 `;
 
-const DropdownVisible = css`
-  opacity: 1;
-  visibility: visible;
-`;
-
-const DropdownAbsolute = css`
-  z-index: 50;
-  position: absolute;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity, visibility ease 0.3s;
-  width: 100%;
-  min-width: 12em;
-  right: 0;
-  top: 4rem;
-  background-color: ${({ theme }) => theme.colors.brown};
-  padding: 1.5rem;
-  & > * {
-    color: ${({ theme }) => theme.colors.light};
-    border-bottom: 1px solid ${({ theme }) => theme.colors['brown-400']};
-    padding-bottom: 1rem;
-    margin-bottom: 1rem;
-    &:last-child {
-      padding-bottom: 0;
-      margin-bottom: 0;
-      border-bottom: none;
-    }
-  }
-  ${Navigator}:hover & {
-    ${DropdownVisible}
-  }
-  ${({ visible }) => visible && DropdownVisible}
-`;
-
-const DropdownFixed = css`
-  display: none;
-  align-items: flex-start;
-  width: 100%;
-  margin: 1rem 0;
-  padding: 1rem 0;
-  border-top: 1px solid ${({ theme }) => theme.colors.gray};
-  & > * {
-    margin: 0.5rem 0;
-    color: ${({ theme }) => theme.colors['gray-400']};
-  }
-  ${Navigator}:hover & {
-    display: flex;
-  }
-`;
 
 export const Dropdown = styled.div`
   display: flex;
@@ -166,7 +105,7 @@ export const Countdown = styled.div`
         line-height: ${({ type }) => (type === 'perk' ? '1.5rem' : '2.5rem')};
       }
     }
-  }
+  } 
   @media all and (max-width: 768px) {
     ul {
       li {

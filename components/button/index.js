@@ -12,12 +12,13 @@ export const PrimaryButton = styled.a`
   transform: perspective(1px) translateZ(0);
   box-shadow: 0 0 1px rgba(0, 0, 0, 0);
 
-  /* overflow: hidden; */
   transition: all 0.3s;
-  color: ${({ theme, outline }) => (outline ? theme.colors.primary : theme.colors.white)};
+  color: ${({ theme }) => theme.colors.white};
   border-radius: 10px;
+  border-color: ${({ theme }) => theme.colors.white};
+  border-width: ${({ outline }) => outline? '1px' : '0px'};
   background: ${({ theme, outline }) =>
-    outline ? theme.colors.white : 'linear-gradient(90deg, rgba(213,36,224,1) 0%, rgba(31,0,252,1) 100%)'};
+    outline ? 'transparent' : theme.colors.gradient};
   &::before {
     content: '';
     position: absolute;
@@ -43,11 +44,6 @@ export const PrimaryButton = styled.a`
     }
   }
   @media only screen and (max-width: 767px) {
-    font-size: 18px;
-    line-height: 26px;
-    letter-spacing: 0.05em;
-    min-width: 200px;
-    padding: 0.4rem 0.8rem;
     &:hover {
       &::before {
         display: none !important;
@@ -68,7 +64,7 @@ export const SecondaryButton = styled(PrimaryButton)`
 `;
 
 export const PrimaryButtonReal = styled(Button)`
-  text-align: center;
+  text-align: center; 
   /* Primary */
   box-sizing: border-box;
   cursor: pointer;
