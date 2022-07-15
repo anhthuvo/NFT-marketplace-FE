@@ -10,10 +10,13 @@ const Custom404 = () => {
   return <h1>404</h1>;
 };
 
-export const getStaticProps = async ({ locale }) => ({
-  props: {
-    ...(await serverSideTranslations(locale, [home]))
-  }
-});
+export const getStaticProps = async ({ locale }) => {
+  const temp = await serverSideTranslations(locale, ['home']);
+  return {
+    props: {
+      ...temp
+    }
+  };
+};
 
 export default Custom404;

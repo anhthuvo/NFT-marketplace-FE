@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { Button } from 'antd';
 
-export const PrimaryButton = styled.a`
+export const PrimaryButton = styled.button`
   text-align: center;
   box-sizing: border-box;
   cursor: pointer;
@@ -42,6 +42,10 @@ export const PrimaryButton = styled.a`
         !outline ? 'rgba(21, 21, 25, 0.15)' : theme.colors.primary};
       transform: scaleX(1);
     }
+  }
+
+  &:focus {
+    outline: none;
   }
   @media only screen and (max-width: 767px) {
     &:hover {

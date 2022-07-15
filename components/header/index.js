@@ -20,7 +20,11 @@ const HeaderComponent = () => {
     <>
       <Header className={`transition duration-300 ease-in-out transform`}>
         <div className="container relative flex flex-wrap items-center justify-between ">
-          <h1 className="text-3xl text-white font-bold">Everly</h1>
+          <Link href="/">
+            <h1 className="text-3xl text-white font-bold cursor-pointer">
+              Everly
+            </h1>
+          </Link>
           <div className="flex items-center justify-end">
             <DesktopMenu className={`hidden lg:flex space-x-10`}>
               <p className={pathname.includes("/gallery") ? "active" : ""}>

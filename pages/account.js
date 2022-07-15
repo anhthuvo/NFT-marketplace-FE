@@ -1,10 +1,10 @@
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import Account from 'components/page/Account';
+import Account from 'components/page/account';
 
 const _Account = () => {
   return (
     <>
-      <main className="min-h-screen">
+      <main className="min-h-screen bg-primary">
         <Account />
       </main>
     </>

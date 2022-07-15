@@ -36,7 +36,11 @@ module.exports = {
         'light-50': 'rgb(252 216 164 / 50%)',
         white: '#ffffff',
         gray: 'gray',
-        violet: '#2b072d'
+        'gray-100': '#353648',
+        violet: '#2b072d',
+        'violet-100': '#6b1270',
+        'dark-blue': '#17182a',
+        red: 'red'
       },
       minWidth: {
         0: '0',
