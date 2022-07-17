@@ -6,9 +6,13 @@ import Owned from "./Owned";
 import Create from "./Create";
 import OnSale from "./OnSale";
 import Import from "./Import";
+import { useEthers } from 'store/useEthers';
+import withAuth from 'utils/withAuth';
 
-export default function Account() {
+function Account() {
   const [state, setState] = useState(0);
+  const { account } = useEthers();
+
   const COMPONENTS = [
     {
       label: "Owned",
@@ -35,6 +39,7 @@ export default function Account() {
     <div className="py-20 lg:pt-32 h-full">
       <SEO title={"My profile"}></SEO>
       <div className="container">
+        {account && <p className="text-white text-base text-right mb-10">Account: {account}</p>}
         <div className="rounded-full py-2 px-5 bg-gray-100 flex w-max space-x-2 mx-auto mb-10 lg:mb-20">
           {COMPONENTS.map((e, index) => (
             <div
@@ -53,3 +58,6 @@ export default function Account() {
     </div>
   );
 }
+
+
+export default withAuth(Account)

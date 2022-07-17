@@ -4,17 +4,21 @@ import nextI18NextConfig from "../next-i18next.config.js";
 import ThemeProvider from "../styles/styledGlobal";
 import "antd/dist/antd.css";
 import "../styles/tailwindGlobal.css";
-import ScrollProvider from 'store/useScroll';
+import ScrollProvider from "store/useScroll";
+import EthersProvider from "store/useEthers";
+
 import Header from "../components/header";
 
 const App = ({ Component, pageProps }) => {
   return (
     <>
       <ThemeProvider>
-        <ScrollProvider>
-          <Header />
-          <Component {...pageProps} />
-        </ScrollProvider>
+        <EthersProvider>
+          <ScrollProvider>
+            <Header />
+            <Component {...pageProps} />
+          </ScrollProvider>
+        </EthersProvider>
       </ThemeProvider>
     </>
   );

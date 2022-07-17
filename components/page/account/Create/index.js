@@ -1,21 +1,17 @@
 import React, { useState, useRef } from "react";
 import GradientText from "components/GradientText";
 import { Input, Form } from "antd";
-import { message, Upload, Badge } from "antd";
+import { message, Upload } from "antd";
 import { InboxOutlined } from "@ant-design/icons";
 import { PrimaryButton } from "components/button";
 import { FormItem, UploadImage, StyledModal } from "./styled";
 import { Properties, Levels, Stats } from "./Components";
 import { PinataApi } from 'api';
-import fs from 'fs';
-const jsonFile = "./metadata.json";
+
 
 const { Dragger } = Upload;
 const { TextArea } = Input;
 const INIT_DATA = {
-  name: "",
-  description: "",
-  external_url: "",
   image: "",
   properties: [],
   levels: [],
@@ -26,8 +22,8 @@ export default function Create() {
   const [state, setState] = useState(INIT_DATA);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [Option, setOption] = useState(null);
-  const value = useRef("");
   const [form] = Form.useForm();
+  const [requiredForm] = Form.useForm();
 
   const UploadProps = {
     name: "file",
@@ -37,30 +33,7 @@ export default function Create() {
       Authorization: "Bearer " + process.env.NEXT_PUBLIC_PINATA_TOKEN,
     },
     maxCount: 1,
-    onChange(info) {
-      const { status } = info.file;
-      if (status !== "uploading") {
-        // console.log(info.file, info.fileList);
-      }
-      if (status === "done") {
-        message.success(`${info.file.name} file uploaded successfully.`);
-        if (state.image) {
-          PinataApi.delete('/unpin/' + state.image.replace(process.env.NEXT_PUBLIC_PINATA_LOAD_API, ''))
-        }
-
-        info.fileList.forEach(file => {
-          const IpfsHash = file?.response?.IpfsHash
-          if (IpfsHash) {
-            setState({
-              ...state,
-              image: process.env.NEXT_PUBLIC_PINATA_LOAD_API + IpfsHash
-            })
-          }
-        })
-      } else if (status === "error") {
-        message.error(`${info.file.name} file upload failed.`);
-      }
-    },
+    onChange: UploadImageToIPFS,
     onDrop(e) {
       // console.log("Dropped files", e.dataTransfer.files);
     },
@@ -72,22 +45,6 @@ export default function Create() {
 
   const handleCancel = () => {
     setIsModalVisible(false);
-  };
-
-  const onChange = (_value) => {
-    setState({
-      ...state,
-      ..._value,
-    });
-  };
-
-  const debounce = (_value, action, time) => {
-    value.current = _value;
-    setTimeout(() => {
-      if (_value === value.current) {
-        action(value.current);
-      }
-    }, time);
   };
 
   const removeOption = (option, index) => {
@@ -111,27 +68,64 @@ export default function Create() {
     setIsModalVisible(false);
   };
 
-  const prepareMetadata = () => {
-    const { name, description, external_url, image } = state;
-    if ( name && description && external_url && image ) {
+  const submit = async () => {
+    const { image } = state;
+    const { name, description, external_url } = requiredForm.getFieldsValue()
+
+    if ( name && description && external_url ) {
       const attributes = [...state.properties, ...state.stats, ...state.levels];
-      const metadata = JSON.stringify({
+      const metadata = new Blob([JSON.stringify({
         name,
         description,
         external_url,
         image,
         attributes,
-      });
+      })], {type : 'application/json'});
 
-      fs.writeFile(jsonFile, metadata, "utf8", (err, data) => {
-        if (err) {
-          throw err;
+      const fileName = `${'abcd'}_${new Date().toISOString()}.json`
+      let IpfsHash;
+      const formData = new FormData();
+      formData.append("file", metadata, `${fileName}`);
+
+      const res = await PinataApi.post("/pinFileToIPFS", formData);
+      if (res) {
+        console.log(res.data)
+        IpfsHash = res.data.IpfsHash
+
+        if (res.data.isDuplicate) {
         }
-        console.log("Created component file");
-      });
-      console.log(metadata);
+      }
+
+      const metadataSource = process.env.NEXT_PUBLIC_PINATA_LOAD_API + IpfsHash
+
     }
   };
+
+  const UploadImageToIPFS = (info) => {
+    const { status } = info.file;
+    if (status !== "uploading") {
+      // console.log(info.file, info.fileList);
+    }
+    if (status === "done") {
+      message.success(`${info.file.name} file uploaded successfully.`);
+
+      if (state.image) {
+        PinataApi.delete('/unpin/' + state.image.replace(process.env.NEXT_PUBLIC_PINATA_LOAD_API, ''))
+      }
+
+      info.fileList.forEach(file => {
+        const IpfsHash = file?.response?.IpfsHash
+        if (IpfsHash) {
+          setState({
+            ...state,
+            image: process.env.NEXT_PUBLIC_PINATA_LOAD_API + IpfsHash
+          })
+        }
+      })
+    } else if (status === "error") {
+      message.error(`${info.file.name} file upload failed.`);
+    }
+  }
 
   return (
     <>
@@ -149,7 +143,7 @@ export default function Create() {
               </div>
               <Form
                 layout="vertical"
-                onValuesChange={(value) => debounce(value, onChange, 1000)}
+                form={requiredForm}
               >
                 <FormItem label="NFT name" name="name" required>
                   <Input />
@@ -179,7 +173,7 @@ export default function Create() {
                   +
                 </div>
               </div>
-              <div className="px-10 py-3 flex flex-wrap">
+              <div className="py-3 flex flex-wrap">
                 {state.properties.map((e, i) => (
                   <div className="relative border-violet-100 border rounded-lg text-center py-3 px-6 mb-4 mr-4" key={i}>
                     <div
@@ -210,7 +204,7 @@ export default function Create() {
                   +
                 </div>
               </div>
-              <div className="px-10 py-3 flex flex-wrap">
+              <div className="py-3 flex flex-wrap">
                 {state.levels.map((e, i) => (
                   <div className="relative border-violet-100 border rounded-lg text-center py-3 px-6 mb-4 mr-4" key={i}>
                     <div
@@ -242,7 +236,7 @@ export default function Create() {
                   +
                 </div>
               </div>
-              <div className="px-10 py-3 flex flex-wrap">
+              <div className="py-3 flex flex-wrap">
                 {state.stats.map((e, i) => (
                   <div className="relative border-violet-100 border rounded-lg text-center py-3 px-6 mb-4 mr-4" key={i}>
                     <div
@@ -270,7 +264,7 @@ export default function Create() {
                 Click or drag file to this area to upload
               </p>
             </Dragger>
-            <PrimaryButton className="mt-10 w-56 block mx-auto" onClick={prepareMetadata}>Submit</PrimaryButton>
+            <PrimaryButton className="mt-10 w-56 block mx-auto" onClick={submit}>Submit</PrimaryButton>
           </UploadImage>
         </div>
       </div>
