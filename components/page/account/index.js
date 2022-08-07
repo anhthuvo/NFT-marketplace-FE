@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { SEO } from "components/SEO";
 import Link from "next/link";
-import Created from "./Created";
 import Owned from "./Owned";
 import Create from "./Create";
 import OnSale from "./OnSale";
@@ -17,10 +16,6 @@ function Account() {
     {
       label: "Owned",
       component: <Owned />,
-    },
-    {
-      label: "Created",
-      component: <Created />,
     },
     {
       label: "Create",

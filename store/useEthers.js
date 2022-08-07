@@ -6,7 +6,8 @@ import React, {
   useContext,
 } from "react";
 import { ethers } from "ethers";
-import { useRouter } from "next/router";
+import { abi as NFTAbi } from 'api/NFT';
+import { abi as MarketplaceAbi } from 'api/Marketplace';
 
 const EthersContext = createContext({});
 
@@ -17,7 +18,8 @@ const initialState = {
 const EtherslProvider = ({ children }) => {
   const [state, setState] = useState(initialState);
   const [Web3Provider, setWeb3Provider] = useState(null);
-  const router = useRouter();
+  const [NFTsContract, setNFTsContract] = useState(null);
+  const [marketContract, setMarketContract] = useState(null);
 
   useEffect(() => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -29,6 +31,12 @@ const EtherslProvider = ({ children }) => {
             account: acc,
           });
     })
+
+    const NFTsContract = new ethers.Contract(process.env.NEXT_PUBLIC_NFT_ADDRESS, NFTAbi, provider);
+    const marketContract = new ethers.Contract(process.env.NEXT_PUBLIC_MARKETPLACE_ADDRESS, MarketplaceAbi, provider);
+
+    setNFTsContract(NFTsContract)
+    setMarketContract(marketContract)
   }, [])
 
   const connectMetaMask = async () => {
@@ -44,7 +52,10 @@ const EtherslProvider = ({ children }) => {
   return (
     <EthersContext.Provider
       value={{
-        ...state,
+        account: state.account,
+        Web3Provider,
+        NFTsContract,
+        marketContract,
         connectMetaMask,
       }}
     >

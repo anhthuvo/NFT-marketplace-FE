@@ -1,18 +1,21 @@
 import React, { useState, useRef } from "react";
 import GradientText from "components/GradientText";
-import { Input, Form } from "antd";
+import { Input, Form, Spin } from "antd";
+import { LoadingOutlined } from '@ant-design/icons';
 import { message, Upload } from "antd";
 import { InboxOutlined } from "@ant-design/icons";
 import { PrimaryButton } from "components/button";
 import { FormItem, UploadImage, StyledModal } from "./styled";
 import { Properties, Levels, Stats } from "./Components";
-import { PinataApi } from 'api';
+import { PinataApi } from "api";
+import { useEthers } from "store/useEthers";
 
-
+const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
 const { Dragger } = Upload;
 const { TextArea } = Input;
 const INIT_DATA = {
   image: "",
+  external_url: "",
   properties: [],
   levels: [],
   stats: [],
@@ -21,26 +24,35 @@ const INIT_DATA = {
 export default function Create() {
   const [state, setState] = useState(INIT_DATA);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isInfo, setIsInfo] = useState(false);
+  const [IsLoading, setIsLoading] = useState(false);
+
   const [Option, setOption] = useState(null);
   const [form] = Form.useForm();
   const [requiredForm] = Form.useForm();
+  const { NFTsContract, Web3Provider, marketContract } = useEthers();
 
   const UploadProps = {
     name: "file",
     multiple: true,
-    action: process.env.NEXT_PUBLIC_PINATA_API + '/pinFileToIPFS',
+    action: process.env.NEXT_PUBLIC_PINATA_API + "/pinFileToIPFS",
     headers: {
       Authorization: "Bearer " + process.env.NEXT_PUBLIC_PINATA_TOKEN,
     },
     maxCount: 1,
-    onChange: UploadImageToIPFS,
+    onChange(info) {
+      UploadImageToIPFS(info);
+    },
     onDrop(e) {
       // console.log("Dropped files", e.dataTransfer.files);
     },
     onRemove() {
-      if (!state.image) return
-      PinataApi.delete('/unpin/' + state.image.replace(process.env.NEXT_PUBLIC_PINATA_LOAD_API, ''))
-    }
+      if (!state.image) return;
+      PinataApi.delete(
+        "/unpin/" +
+          state.image.replace(process.env.NEXT_PUBLIC_PINATA_LOAD_API, "")
+      );
+    },
   };
 
   const handleCancel = () => {
@@ -48,6 +60,7 @@ export default function Create() {
   };
 
   const removeOption = (option, index) => {
+    if (IsLoading) return;
     const array = [...state[option]];
     array.splice(index, 1);
     setState({
@@ -57,6 +70,7 @@ export default function Create() {
   };
 
   const addOption = (value) => {
+    if (IsLoading) return;
     if (Object.values(value).some((e) => e === "" || e === undefined)) return;
     const array = [...state[Option]];
     array.push(value);
@@ -69,63 +83,130 @@ export default function Create() {
   };
 
   const submit = async () => {
+    if (IsLoading) return;
+    setIsLoading(true);
     const { image } = state;
-    const { name, description, external_url } = requiredForm.getFieldsValue()
+    const { name, description, external_url } = requiredForm.getFieldsValue();
+    let metadataIpfsHash;
 
-    if ( name && description && external_url ) {
-      const attributes = [...state.properties, ...state.stats, ...state.levels];
-      const metadata = new Blob([JSON.stringify({
-        name,
-        description,
-        external_url,
-        image,
-        attributes,
-      })], {type : 'application/json'});
+    // try {
+    //   if (!(name && description && image)) return setIsInfo("Sorry, you have not filled the required field");
+    //   const attributes = [...state.properties, ...state.stats, ...state.levels];
+    //   const metadata = new Blob(
+    //     [
+    //       JSON.stringify({
+    //         name,
+    //         description,
+    //         external_url,
+    //         image: process.env.NEXT_PUBLIC_PINATA_LOAD_API + image,
+    //         attributes,
+    //       }),
+    //     ],
+    //     { type: "application/json" }
+    //   );
 
-      const fileName = `${'abcd'}_${new Date().toISOString()}.json`
-      let IpfsHash;
-      const formData = new FormData();
-      formData.append("file", metadata, `${fileName}`);
+    //   const fileName = `${account}_${new Date().toISOString()}.json`;
+    //   const formData = new FormData();
+    //   formData.append("file", metadata, `${fileName}`);
+    //   const res = await PinataApi.post("/pinFileToIPFS", formData);
+    //   metadataIpfsHash = res.data.IpfsHash;
+    // } catch (err) {
+    //   setIsLoading(false);
+    //   return message.error("Unable to upload JSON file");
+    // }
 
-      const res = await PinataApi.post("/pinFileToIPFS", formData);
-      if (res) {
-        console.log(res.data)
-        IpfsHash = res.data.IpfsHash
-
-        if (res.data.isDuplicate) {
+    try {
+      const signer = Web3Provider.getSigner();
+      const signer_address = await signer.getAddress();
+      const NFTsContractWithSigner = NFTsContract.connect(signer);
+      const minted = await NFTsContractWithSigner.mint(
+        signer_address,
+        process.env.NEXT_PUBLIC_PINATA_LOAD_API + "QmVmci9j7hY3Gyv5DnjYagPj5UnQ4QikjyvhPNrWavSJJ1"
+      );
+      // -----Mint NFT
+      let tokenId;
+      const receipt = await minted.wait();
+      console.log("receipt minted", receipt);
+      for (const event of receipt.events) {
+        if (event.event !== "Transfer") {
+          continue;
         }
+        tokenId = event.args.tokenId;
+        // console.log("tokenId", tokenId);
       }
+      if (!tokenId) throw new Error("Unable to mint NFT");
 
-      const metadataSource = process.env.NEXT_PUBLIC_PINATA_LOAD_API + IpfsHash
+      // ------- Grant authorization for marketplace
+      setIsInfo(
+        "To import your NFT to our marketplace, you have to give us control on your NFT. Please click confirm "
+      );
+      await NFTsContractWithSigner.setApprovalForAll(
+        process.env.NEXT_PUBLIC_MARKETPLACE_ADDRESS,
+        true
+      );
+      setIsInfo(false);
 
+      // --------Import NFT to marketplace
+      setIsInfo(
+        "Finally, please confirm to import your NFT to our marketplace"
+      );
+      const NFTAddress = process.env.NEXT_PUBLIC_NFT_ADDRESS;
+      const marketContractWithSigner = await marketContract.connect(signer);
+      const imported = await marketContractWithSigner.importItem(
+        NFTAddress,
+        signer_address,
+        tokenId,
+        20
+      );
+      setIsInfo(false);
+      const result = await imported.wait();
+      console.log("receipt imported", result.events);
+      if (!result?.events?.[0])
+        throw new Error("Unable to import NFT to marketplace");
+
+      // -------Successfully
+      setIsInfo("Great!! Your NFT is created successfully.");
+      requiredForm.resetFields();
+      setIsLoading(false);
+    } catch (err) {
+      console.log(err);
+      if (isInfo) setIsInfo(false);
+      if (
+        err.message === "Unable to mint NFT" ||
+        err.message === "Unable to upload JSON file" ||
+        err.message === "Unable to import NFT to marketplace"
+      )
+        message.error(err.message);
+      else message.error("Failed to create NFT");
+      PinataApi.delete("/unpin/" + state.image);
+      PinataApi.delete("/unpin/" + metadataIpfsHash, "");
+      setIsLoading(false);
     }
   };
 
   const UploadImageToIPFS = (info) => {
     const { status } = info.file;
-    if (status !== "uploading") {
-      // console.log(info.file, info.fileList);
-    }
     if (status === "done") {
       message.success(`${info.file.name} file uploaded successfully.`);
 
       if (state.image) {
-        PinataApi.delete('/unpin/' + state.image.replace(process.env.NEXT_PUBLIC_PINATA_LOAD_API, ''))
+        PinataApi.delete("/unpin/" + state.image);
       }
 
-      info.fileList.forEach(file => {
-        const IpfsHash = file?.response?.IpfsHash
+      info.fileList.forEach((file) => {
+        const IpfsHash = file?.response?.IpfsHash;
         if (IpfsHash) {
+          console.log(file?.response?.IpfsHash);
           setState({
             ...state,
-            image: process.env.NEXT_PUBLIC_PINATA_LOAD_API + IpfsHash
-          })
+            image: IpfsHash,
+          });
         }
-      })
+      });
     } else if (status === "error") {
       message.error(`${info.file.name} file upload failed.`);
     }
-  }
+  };
 
   return (
     <>
@@ -141,17 +222,14 @@ export default function Create() {
                   Information
                 </span>
               </div>
-              <Form
-                layout="vertical"
-                form={requiredForm}
-              >
+              <Form layout="vertical" form={requiredForm}>
                 <FormItem label="NFT name" name="name" required>
                   <Input />
                 </FormItem>
                 <FormItem label="Description" name="description" required>
                   <TextArea />
                 </FormItem>
-                <FormItem label="External Link" name="external_url" required>
+                <FormItem label="External Link" name="external_url">
                   <Input />
                 </FormItem>
               </Form>
@@ -166,6 +244,7 @@ export default function Create() {
                 <div
                   className="rounded-lg border-2 font-medium border-secondary h-10 w-10 text-secondary flex items-center justify-center cursor-pointer"
                   onClick={() => {
+                    if (IsLoading) return;
                     setOption("properties");
                     setIsModalVisible(true);
                   }}
@@ -175,7 +254,10 @@ export default function Create() {
               </div>
               <div className="py-3 flex flex-wrap">
                 {state.properties.map((e, i) => (
-                  <div className="relative border-violet-100 border rounded-lg text-center py-3 px-6 mb-4 mr-4" key={i}>
+                  <div
+                    className="relative border-violet-100 border rounded-lg text-center py-3 px-6 mb-4 mr-4"
+                    key={i}
+                  >
                     <div
                       className="h-5 w-5 flex items-center justify-center rounded-full bg-red text-white absolute -right-2 -top-2 cursor-pointer"
                       onClick={() => removeOption("properties", i)}
@@ -197,6 +279,7 @@ export default function Create() {
                 <div
                   className="rounded-lg border-2 font-medium border-secondary h-10 w-10 text-secondary flex items-center justify-center cursor-pointer"
                   onClick={() => {
+                    if (IsLoading) return;
                     setOption("levels");
                     setIsModalVisible(true);
                   }}
@@ -206,7 +289,10 @@ export default function Create() {
               </div>
               <div className="py-3 flex flex-wrap">
                 {state.levels.map((e, i) => (
-                  <div className="relative border-violet-100 border rounded-lg text-center py-3 px-6 mb-4 mr-4" key={i}>
+                  <div
+                    className="relative border-violet-100 border rounded-lg text-center py-3 px-6 mb-4 mr-4"
+                    key={i}
+                  >
                     <div
                       className="h-5 w-5 flex items-center justify-center rounded-full bg-red text-white absolute -right-2 -top-2 cursor-pointer"
                       onClick={() => removeOption("levels", i)}
@@ -229,6 +315,7 @@ export default function Create() {
                 <div
                   className="rounded-lg border-2 font-medium border-secondary h-10 w-10 text-secondary flex items-center justify-center cursor-pointer"
                   onClick={() => {
+                    if (IsLoading) return;
                     setOption("stats");
                     setIsModalVisible(true);
                   }}
@@ -238,7 +325,10 @@ export default function Create() {
               </div>
               <div className="py-3 flex flex-wrap">
                 {state.stats.map((e, i) => (
-                  <div className="relative border-violet-100 border rounded-lg text-center py-3 px-6 mb-4 mr-4" key={i}>
+                  <div
+                    className="relative border-violet-100 border rounded-lg text-center py-3 px-6 mb-4 mr-4"
+                    key={i}
+                  >
                     <div
                       className="h-5 w-5 flex items-center justify-center rounded-full bg-red text-white absolute -right-2 -top-2 cursor-pointer"
                       onClick={() => removeOption("stats", i)}
@@ -264,12 +354,16 @@ export default function Create() {
                 Click or drag file to this area to upload
               </p>
             </Dragger>
-            <PrimaryButton className="mt-10 w-56 block mx-auto" onClick={submit}>Submit</PrimaryButton>
+            <PrimaryButton
+              className="mt-10 w-56 block mx-auto"
+              onClick={submit}
+            >
+              {IsLoading? <Spin indicator={antIcon} tip="Processing..." /> : 'Submit'}
+            </PrimaryButton>
           </UploadImage>
         </div>
       </div>
       <StyledModal
-        title=""
         visible={isModalVisible}
         onCancel={handleCancel}
         footer={null}
@@ -288,6 +382,9 @@ export default function Create() {
             <Properties />
           )}
         </Form>
+      </StyledModal>
+      <StyledModal visible={isInfo} onCancel={() => setIsInfo(false)} footer={null}>
+        <p className="text-xl text-white font-medium text-center">{isInfo}</p>
       </StyledModal>
     </>
   );
