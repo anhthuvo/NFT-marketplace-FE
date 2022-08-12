@@ -3,7 +3,6 @@ import { SEO } from "components/SEO";
 import Link from "next/link";
 import Owned from "./Owned";
 import Create from "./Create";
-import OnSale from "./OnSale";
 import Import from "./Import";
 import { useEthers } from 'store/useEthers';
 import withAuth from 'utils/withAuth';
@@ -20,10 +19,6 @@ function Account() {
     {
       label: "Create",
       component: <Create />,
-    },
-    {
-      label: "On Sale",
-      component: <OnSale />,
     },
     {
       label: "Import",

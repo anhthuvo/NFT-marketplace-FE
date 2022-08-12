@@ -8,14 +8,14 @@ const Card = ({ name, image, price, onSale, sell }) => {
         <img src={image} className="absolute top-0 left-0 w-full h-full object-cover" />
       </div>
 
-      <div className="flex justify-between mt-4">
-        <p className="text-white text-xl font-semi-bold">{name}</p>
+      <div className="flex justify-between mt-4 items-start">
+        <p className="text-white text-lg font-semi-bold pr-4 h-14 text-ellipsis overflow-hidden">{name}</p>
         <div className="flex items-center">
           <p className="text-gray mr-3">{price}</p>
           <img src="images/home/icon-eth.png" className="w-5"/>
         </div>
       </div>
-      { !onSale && <button className="ml-auto block text-secondary mt-3" onClick={sell}>Sale</button> }
+      { !onSale ? <button className="ml-auto block text-secondary mt-3" onClick={sell}>Sale</button> : <p className="text-right text-secondary mt-3" >On sale</p> }
     </div>
   );
 };

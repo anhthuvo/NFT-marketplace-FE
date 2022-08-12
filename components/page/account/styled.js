@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Form, Modal } from "antd";
+import { Form, Modal, Steps } from "antd";
 
 export const FormItem = styled(Form.Item)`
   input,
@@ -71,3 +71,33 @@ export const StyledModal = styled(Modal)`
     outline: none;
   }
 `;
+
+export const StyledSteps = styled(Steps)`
+margin-top: 2rem;
+
+  .ant-steps-item > .ant-steps-item-container > .ant-steps-item-content > .ant-steps-item-title  {
+    color: ${({ theme }) => theme.colors.white};
+  }
+  
+  .ant-steps-item-finish > .ant-steps-item-container > .ant-steps-item-tail::after {
+    background: ${({ theme }) => theme.colors.gradient};
+  }
+
+  .ant-steps-item-wait > .ant-steps-item-container > .ant-steps-item-tail::after,
+  .ant-steps-item-process > .ant-steps-item-container > .ant-steps-item-tail::after {
+    background: ${({ theme }) => theme.colors.gray};
+  }
+
+  .ant-steps-item-finish .ant-steps-item-icon > .ant-steps-icon .ant-steps-icon-dot,
+  .ant-steps-item-process .ant-steps-item-icon > .ant-steps-icon .ant-steps-icon-dot {
+    background: ${({ theme }) => theme.colors.secondary};
+  }
+
+  .ant-steps-item-wait .ant-steps-item-icon > .ant-steps-icon .ant-steps-icon-dot {
+    background: ${({ theme }) => theme.colors.gray};
+  }
+
+  .ant-steps-item > .ant-steps-item-container > .ant-steps-item-content > .ant-steps-item-description {
+    color: ${({ theme }) => theme.colors.gray};
+  }
+`

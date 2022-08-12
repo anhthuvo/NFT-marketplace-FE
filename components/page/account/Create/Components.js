@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { Input, Select } from "antd";
 import { PrimaryButton } from "components/button";
-import { FormItem, UploadImage, StyledModal } from "./styled";
+import { FormItem } from "../styled";
 
 export function Properties() {
   return (

@@ -63,8 +63,9 @@ export default function OnSale() {
 
   console.log("state", state.itemList);
   return (
-    <div className="container">
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-10 max-w-6xl mt-10 lg:mt-20 mx-auto">
+    <div className="container pt-10 lg:pt-20">
+      <p className="text-white text-4xl font-semibold text-center mb-10">NFTs On Sale</p>
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-10 max-w-6xl mx-auto">
         {state?.itemList?.map((e, i) => (
           <Card
             key={i}
