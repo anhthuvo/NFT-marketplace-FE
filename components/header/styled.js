@@ -1,20 +1,6 @@
 import styled, { css } from 'styled-components';
-import { Drawer } from 'antd';
-
-export const MobileMenu = styled(Drawer)`
-  .ant-drawer-body {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: flex-start;
-    background-color: ${({ theme }) => theme.colors['black-200']};
-  }
-`;
 
 export const DesktopMenu = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
   color: ${({ theme }) => theme.colors.white};
   font-size: 1rem;
   font-weight: 500;
@@ -37,18 +23,6 @@ export const Navigator = styled.nav`
   transition: color ease 0.3s;
   p {
     display: inline-block;
-  }
-  &.rorate {
-    svg {
-      display: inline-block;
-      transform: rotate(180deg);
-      transition: all ease 0.3s;
-    }
-    &:hover {
-      svg {
-        transform: rotate(0);
-      }
-    }
   }
 
   a {
@@ -75,46 +49,23 @@ export const Header = styled.div`
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.18);
   }
   background-color: ${({theme}) => theme.colors['primary-50']};
-`;
 
+  @media only screen and (max-width: 1024px) {
+    // position: absolute;
+    // height: 100%;
+    // z-index: 10;
+    // padding-top: 40px;
 
-export const Dropdown = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  ${(props) => (props.position === 'absolute' ? DropdownAbsolute : DropdownFixed)};
-`;
-
-export const Countdown = styled.div`
-  ul {
-    display: flex;
-    li {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      font-size: ${({ type }) => (type === 'perk' ? '0.6rem' : '0.8rem')};
-      list-style-type: none;
-      padding: 0.3em;
-      align-items: center;
-      color: ${({ theme, type }) =>
-        type === 'perk' ? theme.colors.black : theme.colors['gray-400']};
-      span {
-        color: ${({ theme, type }) => (type === 'perk' ? theme.colors.pink.b : theme.colors.white)};
-        display: block;
-        font-size: ${({ type }) => (type === 'perk' ? '1.5rem' : '2.5rem')};
-        line-height: ${({ type }) => (type === 'perk' ? '1.5rem' : '2.5rem')};
-      }
-    }
-  } 
-  @media all and (max-width: 768px) {
-    ul {
-      li {
-        font-size: ${({ type }) => (type === 'perk' ? '0.5rem' : '0.7rem')};
-        span {
-          font-size: ${({ type }) => (type === 'perk' ? '1.25rem' : '2rem')};
-          line-height: ${({ type }) => (type === 'perk' ? '1.25rem' : '2rem')};
-        }
-      }
-    }
+    // .bg {
+    //   background-color: #d9d9d980;
+    //   backdrop-filter: blur(10px);
+    //   width: 100%;
+    //   height: 100%;
+    //   position: absolute;
+    //   top: 0;
+    //   left: 0;
+    // }
   }
 `;
+
+

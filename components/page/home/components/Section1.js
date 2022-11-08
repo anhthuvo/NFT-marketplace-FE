@@ -2,11 +2,14 @@ import React, { useRef, useEffect, useState } from "react";
 import { PrimaryButton } from "components/button";
 import styled from 'styled-components';
 import GradientText from 'components/GradientText';
+import { useRouter } from "next/router";
 
 export default function Section1() {
+  const router = useRouter()
+  
   return (
     <div
-      className="w-full h-full bg-no-repeat bg-cover py-20"
+      className="w-full h-full bg-no-repeat bg-cover py-24 lg:py-20"
       style={{ background: 'url("images/home/bg_section1.png")' }}
     >
       <div className="container h-full">
@@ -22,8 +25,8 @@ export default function Section1() {
               Marketplace for monster charater collections <br />
               non fungible token NFTs
             </p>
-            <PrimaryButton onClick={() => {}} className="mr-10 mb-5 md:mb-0">
-              Explore Now
+            <PrimaryButton onClick={() => {router.push('/gallery')}} className="mr-10 mb-5 md:mb-0">
+              Gallery
             </PrimaryButton>
             <PrimaryButton outline onClick={() => {}}>
               Create Your

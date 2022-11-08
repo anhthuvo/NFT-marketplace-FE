@@ -4,8 +4,9 @@ import { useEthers } from "store/useEthers";
 import axios from "axios";
 import { StyledModal } from "./styled";
 import { PrimaryButton } from "components/button";
-import { LoadingOutlined } from '@ant-design/icons';
-import { Spin} from "antd";
+import { LoadingOutlined } from "@ant-design/icons";
+import { Spin } from "antd";
+import { ethers } from "ethers";
 
 const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
 
@@ -16,7 +17,7 @@ export default function Owned() {
     currentPage: 0,
     total: 0,
   });
-  const { marketContract, NFTsContract, Web3Provider, account } = useEthers();
+  const { marketContract, NFTsContract, account } = useEthers();
   const isMounted = useRef(true);
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [error, setError] = useState(false);
@@ -39,9 +40,18 @@ export default function Owned() {
       if (rawItem.some((_e) => _e === undefined)) resolve(null);
       const [id, tokenId, nftAddress, price, owner, onSale] = rawItem;
       let uri = await NFTsContract.tokenURI(tokenId);
+      let timeOut = true
+
+      setTimeout(() => {
+        if (timeOut) {
+          resolve(null)
+        }
+      }, 4000)
+
       axios
         .get(uri)
         .then((result) => {
+          timeOut = false;
           let metadata = result.data;
           let item = {
             id: id.toString(),
@@ -60,7 +70,6 @@ export default function Owned() {
 
   const getNFTs = async () => {
     try {
-      const signer = Web3Provider.getSigner();
       const result = await marketContract.getMyNFTs(10, 1);
       const [rawItemList, pageSize, currentPage, total] = result;
 
@@ -70,7 +79,7 @@ export default function Owned() {
       const promises = [];
       rawItemList.forEach((e) => promises.push(getItem(e)));
       Promise.all(promises).then((res) => {
-        itemList = res;
+        itemList = res.filter(e => e);
 
         isMounted.current &&
           setState({
@@ -79,11 +88,11 @@ export default function Owned() {
             currentPage: currentPage.toString(),
             total: total.toString(),
           });
-        setIsLoading(false)
+        setIsLoading(false);
       });
     } catch (err) {
       console.log(err);
-      setIsLoading(false)
+      setIsLoading(false);
     }
   };
 
@@ -105,7 +114,6 @@ export default function Owned() {
       if (event.event === "SellItem") {
         const newItemList = [...state.itemList];
         newItemList[index].onSale = true;
-        newItemList[index].price = true;
 
         setSelectedIndex(null);
         setState({
@@ -116,9 +124,16 @@ export default function Owned() {
     }
   };
 
+  const cancel = (id) => {
+    const item = state.itemList[id]
+    const _id = ethers.BigNumber.from(item.id)
+
+    marketContract.cancelSell(_id);
+  }
+
   // console.log("state", state, state.itemList.length);
   return IsLoading ? (
-    <Spin indicator={antIcon} tip="Processing..." className="block mx-auto"/>
+    <Spin indicator={antIcon} tip="Processing..." className="block mx-auto" />
   ) : (
     <>
       <div className="container">
@@ -127,13 +142,22 @@ export default function Owned() {
             <Card
               key={i}
               image={e?.metadata?.image}
-              price={e?.price || 0}
+              price={e?.price? ethers.utils.formatEther(e.price) : 0}
               name={e?.metadata?.name}
-              onSale={e?.onSale}
-              sell={() => {
-                setSelectedIndex(i);
-              }}
-            />
+            >
+              {!e?.onSale ? (
+                <button
+                  className="ml-auto block text-secondary mt-3"
+                  onClick={() => {
+                    setSelectedIndex(i);
+                  }}
+                >
+                  Sale
+                </button>
+              ) : (
+                <p className="text-right text-secondary mt-3" onClick={() => cancel(i)}>Cancel sell</p>
+              )}
+            </Card>
           ))}
         </div>
       </div>

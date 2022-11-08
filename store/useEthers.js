@@ -8,6 +8,7 @@ import React, {
 import { ethers } from "ethers";
 import { abi as NFTAbi } from "api/NFT";
 import { abi as MarketplaceAbi } from "api/Marketplace";
+import { useRouter } from "next/router";
 
 const EthersContext = createContext({});
 
@@ -17,14 +18,15 @@ const initialState = {
 
 const EtherslProvider = ({ children }) => {
   const [state, setState] = useState(initialState);
-  const [Web3Provider, setWeb3Provider] = useState(null);
+  const Web3Provider = useRef(null);
   const [NFTsContract, setNFTsContract] = useState(null);
-  const [marketContract, setMarketContract] = useState(null);
+  const MarketContract = useRef(null);
+  const router = useRouter()
 
   useEffect(() => {
     if (!window.ethereum) return;
     const provider = new ethers.providers.Web3Provider(window.ethereum);
-    setWeb3Provider(provider);
+    Web3Provider.current = provider;
 
     const NFTsContract = new ethers.Contract(
       process.env.NEXT_PUBLIC_NFT_ADDRESS,
@@ -33,48 +35,48 @@ const EtherslProvider = ({ children }) => {
     );
     setNFTsContract(NFTsContract);
 
-    const marketContract = new ethers.Contract(
-      process.env.NEXT_PUBLIC_MARKETPLACE_ADDRESS,
-      MarketplaceAbi,
-      provider
-    );
-    const signer = provider.getSigner();
-    const marketContractWithSigner = marketContract.connect(signer);
-    setMarketContract(marketContractWithSigner);
+    detectMetamask()
 
     window.ethereum.on("accountsChanged", function (accounts) {
-      let acc = accounts[0];
-      if (acc) {
-        const signer = provider.getSigner();
-        const marketContractWithSigner = marketContract.connect(signer);
-        setMarketContract(marketContractWithSigner);
-      }
-
-      setState({
-        ...state,
-        account: acc,
-      });
+      detectMetamask()
     });
   }, []);
 
   const connectMetaMask = async () => {
-    if (!Web3Provider) return;
-    const accounts = await Web3Provider.send("eth_requestAccounts", []);
-
-    if (accounts) {
-      setState({
-        ...state,
-        account: accounts[0],
-      });
-    }
+    if (!Web3Provider.current) return;
+    window.ethereum.request({
+      method: "eth_requestAccounts",
+    });
   };
+
+  const detectMetamask = async () => {
+    if (!Web3Provider.current) return;
+    const accounts = await window.ethereum.request({ method: 'eth_accounts' })
+    setState({
+      ...state,
+      account: accounts[0],
+    });
+    if (accounts[0]) {
+      const marketContract = new ethers.Contract(
+        process.env.NEXT_PUBLIC_MARKETPLACE_ADDRESS,
+        MarketplaceAbi,
+        Web3Provider.current
+      );
+      const signer = Web3Provider.current.getSigner();
+      const marketContractWithSigner = marketContract.connect(signer);
+      MarketContract.current = marketContractWithSigner;
+    }
+    else if (router.pathname.includes('account')) {
+      router.push('/')
+    }
+  }
   return (
     <EthersContext.Provider
       value={{
         account: state.account,
-        Web3Provider,
+        Web3Provider: Web3Provider.current,
         NFTsContract,
-        marketContract,
+        marketContract: MarketContract.current,
         connectMetaMask,
       }}
     >

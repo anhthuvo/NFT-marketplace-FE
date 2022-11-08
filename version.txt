@@ -1,4 +1,5 @@
 NaN.NaN.NaN
+NaN.NaN.NaN: Owned, Gallery, sell function
 NaN.NaN.NaN: import NFT, get NFT list
 NaN.NaN.NaN: Create  NFT
 NaN.NaN.NaN: account page

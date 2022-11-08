@@ -9,7 +9,8 @@ const Login = () => {
   return (
     <>
       <SEO title={"Connect wallet"}></SEO>
-      <main className="bg-primary min-h-screen pt-20">
+      <main className="bg-primary min-h-screen pt-24 lg:pt-20">
+        <div className="container">
         <p className="text-white text-3xl mb-10 text-center ">
           Connect your wallet.
         </p>
@@ -24,6 +25,7 @@ const Login = () => {
           <GradientText className="text-white text-center w-full text-2xl">
             Metamask
           </GradientText>
+        </div>
         </div>
       </main>
     </>

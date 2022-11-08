@@ -20,16 +20,16 @@ function Account() {
       label: "Create",
       component: <Create />,
     },
-    {
-      label: "Import",
-      component: <Import />,
-    },
+    // {
+    //   label: "Import",
+    //   component: <Import />,
+    // },
   ];
   return (
     <div className="py-20 lg:pt-32 h-full">
       <SEO title={"My profile"}></SEO>
       <div className="container">
-        {account && <p className="text-white text-base text-right mb-10">Account: {account}</p>}
+        {/* {account && <p className="text-white text-base text-right mb-10">Account: ...{account.slice(account.length -5, account.length)}</p>} */}
         <div className="rounded-full py-2 px-5 bg-gray-100 flex w-max space-x-2 mx-auto mb-10 lg:mb-20">
           {COMPONENTS.map((e, index) => (
             <div
@@ -50,4 +50,4 @@ function Account() {
 }
 
 
-export default withAuth(Account)
+export default Account

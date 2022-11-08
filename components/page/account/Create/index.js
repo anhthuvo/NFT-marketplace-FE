@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import GradientText from "components/GradientText";
 import { Input, Form, Spin, message, Upload, Steps } from "antd";
-import { LoadingOutlined } from '@ant-design/icons';
+import { LoadingOutlined } from "@ant-design/icons";
 import { InboxOutlined } from "@ant-design/icons";
 import { PrimaryButton } from "components/button";
 import { FormItem, UploadImage, StyledModal, StyledSteps } from "../styled";
@@ -9,6 +9,7 @@ import { Properties, Levels, Stats } from "./Components";
 import { PinataApi } from "api";
 import { useEthers } from "store/useEthers";
 import { useWindowDimensions } from "../../../../utils";
+import { ethers } from "ethers";
 
 const { Step } = Steps;
 const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
@@ -33,7 +34,7 @@ export default function Create() {
   const [Option, setOption] = useState(null);
   const [form] = Form.useForm();
   const [requiredForm] = Form.useForm();
-  const { NFTsContract, Web3Provider, marketContract, account } = useEthers();
+  const { NFTsContract, Web3Provider, marketContract } = useEthers();
 
   const UploadProps = {
     name: "file",
@@ -90,40 +91,40 @@ export default function Create() {
     const { image } = state;
     const { name, description, external_url } = requiredForm.getFieldsValue();
     let metadataIpfsHash;
-    // metadataIpfsHash = "QmVmci9j7hY3Gyv5DnjYagPj5UnQ4QikjyvhPNrWavSJJ1";
+    metadataIpfsHash = "QmVmci9j7hY3Gyv5DnjYagPj5UnQ4QikjyvhPNrWavSJJ1";
     // metadataIpfsHash = "QmQ7wLu2TiLaq7VsdwPzgajv3UNGiLh4YFA2NwDsrsPiqW";
     // metadataIpfsHash = "QmQZPM8Jf25Veq3usspaYPCQAJEN1Um6t3EAUY1rewZdLE";
     // metadataIpfsHash = "QmWAXS4VkgEtn9NaTft39AXmQv5wC59id1zGNZD6GcLCwd";
 
-    try {
-      if (!(name && description && image)) return setIsInfo("Sorry, you have not filled the required field");
-      setIsLoading(true);
-      setStep(0);
-      const attributes = [...state.properties, ...state.stats, ...state.levels];
-      const metadata = new Blob(
-        [
-          JSON.stringify({
-            name,
-            description,
-            external_url,
-            image: process.env.NEXT_PUBLIC_PINATA_LOAD_API + image,
-            attributes,
-          }),
-        ],
-        { type: "application/json" }
-      );
+    // try {
+    //   if (!(name && description && image)) return setIsInfo("Sorry, you have not filled the required field");
+    //   setIsLoading(true);
+    //   setStep(0);
+    //   const attributes = [...state.properties, ...state.stats, ...state.levels];
+    //   const metadata = new Blob(
+    //     [
+    //       JSON.stringify({
+    //         name,
+    //         description,
+    //         external_url,
+    //         image: process.env.NEXT_PUBLIC_PINATA_LOAD_API + image,
+    //         attributes,
+    //       }),
+    //     ],
+    //     { type: "application/json" }
+    //   );
 
-      const fileName = `${account}_${new Date().toISOString()}.json`;
-      const formData = new FormData();
-      formData.append("file", metadata, `${fileName}`);
-      const res = await PinataApi.post("/pinFileToIPFS", formData);
-      metadataIpfsHash = res.data.IpfsHash;
-    } catch (err) {
-      console.log(err)
-      setIsLoading(false);
-      setStep(-1);
-      return message.error("Unable to upload JSON file");
-    }
+    //   const fileName = `${account}_${new Date().toISOString()}.json`;
+    //   const formData = new FormData();
+    //   formData.append("file", metadata, `${fileName}`);
+    //   const res = await PinataApi.post("/pinFileToIPFS", formData);
+    //   metadataIpfsHash = res.data.IpfsHash;
+    // } catch (err) {
+    //   console.log(err)
+    //   setIsLoading(false);
+    //   setStep(-1);
+    //   return message.error("Unable to upload JSON file");
+    // }
 
     try {
       const signer = Web3Provider.getSigner();
@@ -142,25 +143,24 @@ export default function Create() {
           continue;
         }
         tokenId = event.args.tokenId;
-        // console.log("tokenId", tokenId);
       }
       if (!tokenId) throw new Error("Unable to mint NFT");
 
       // ------- Grant authorization for marketplace
-      setStep(1)
+      setStep(1);
       await NFTsContractWithSigner.setApprovalForAll(
         process.env.NEXT_PUBLIC_MARKETPLACE_ADDRESS,
         true
       );
 
       // --------Import NFT to marketplace
-      setStep(2)
+      setStep(2);
       const NFTAddress = process.env.NEXT_PUBLIC_NFT_ADDRESS;
       const imported = await marketContract.importItem(
         NFTAddress,
         signer_address,
         tokenId,
-        1
+        ethers.utils.parseUnits("1.0")
       );
       const result = await imported.wait();
       console.log("receipt imported", result.events);
@@ -362,12 +362,26 @@ export default function Create() {
               className="mt-10 w-56 block mx-auto"
               onClick={submit}
             >
-              {IsLoading? <Spin indicator={antIcon} tip="Processing..." /> : 'Submit'}
+              {IsLoading ? (
+                <Spin indicator={antIcon} tip="Processing..." />
+              ) : (
+                "Submit"
+              )}
             </PrimaryButton>
-            <StyledSteps progressDot current={step} direction={device === 'desktop'? "horizontal" : 'vertical'}>
-              <Step title="Mint NFT" description="Create your NFT"/>
-              <Step title="Grant permission" description="To import your NFT to our marketplace, you have to give us control on your NFT. Please click confirm."/>
-              <Step title="Import to marketplace" description="Please confirm to import your NFT to our marketplace"/>
+            <StyledSteps
+              progressDot
+              current={step}
+              direction={device === "desktop" ? "horizontal" : "vertical"}
+            >
+              <Step title="Mint NFT" description="Create your NFT" />
+              <Step
+                title="Grant permission"
+                description="To import your NFT to our marketplace, you have to give us control on your NFT. Please click confirm."
+              />
+              <Step
+                title="Import to marketplace"
+                description="Please confirm to import your NFT to our marketplace"
+              />
             </StyledSteps>
           </UploadImage>
         </div>
@@ -392,7 +406,11 @@ export default function Create() {
           )}
         </Form>
       </StyledModal>
-      <StyledModal visible={isInfo} onCancel={() => setIsInfo(false)} footer={null}>
+      <StyledModal
+        visible={isInfo}
+        onCancel={() => setIsInfo(false)}
+        footer={null}
+      >
         <p className="text-xl text-white font-medium text-center">{isInfo}</p>
       </StyledModal>
     </>
