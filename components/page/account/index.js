@@ -4,12 +4,12 @@ import Link from "next/link";
 import Owned from "./Owned";
 import Create from "./Create";
 import Import from "./Import";
-import { useEthers } from 'store/useEthers';
-import withAuth from 'utils/withAuth';
+import { useEthers } from "store/useEthers";
+import withAuth from "utils/withAuth";
 
 function Account() {
   const [state, setState] = useState(0);
-  const { account } = useEthers();
+  const { network } = useEthers();
 
   const COMPONENTS = [
     {
@@ -29,7 +29,15 @@ function Account() {
     <div className="py-20 lg:pt-32 h-full">
       <SEO title={"My profile"}></SEO>
       <div className="container">
-        {/* {account && <p className="text-white text-base text-right mb-10">Account: ...{account.slice(account.length -5, account.length)}</p>} */}
+        {network.chainId === 80001 ? (
+          <p className="text-white text-base text-right mb-10 capitalize">
+            Network: {network.name}
+          </p>
+        ) : (
+          <p className="text-red text-base text-right mb-10 capitalize">
+            Please connect to Mumbai testnet
+          </p>
+        )}
         <div className="rounded-full py-2 px-5 bg-gray-100 flex w-max space-x-2 mx-auto mb-10 lg:mb-20">
           {COMPONENTS.map((e, index) => (
             <div
@@ -49,5 +57,4 @@ function Account() {
   );
 }
 
-
-export default Account
+export default Account;

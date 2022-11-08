@@ -20,12 +20,20 @@ const EtherslProvider = ({ children }) => {
   const [state, setState] = useState(initialState);
   const Web3Provider = useRef(null);
   const [NFTsContract, setNFTsContract] = useState(null);
+  const [Network, setNetwork] = useState({ 
+    chainId: '', 
+    ensAddress: '', 
+    name: '' 
+  });
   const MarketContract = useRef(null);
   const router = useRouter()
 
   useEffect(() => {
     if (!window.ethereum) return;
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const provider = new ethers.providers.Web3Provider(
+      window.ethereum,
+      "any"
+    );
     Web3Provider.current = provider;
 
     const NFTsContract = new ethers.Contract(
@@ -40,6 +48,10 @@ const EtherslProvider = ({ children }) => {
     window.ethereum.on("accountsChanged", function (accounts) {
       detectMetamask()
     });
+
+    Web3Provider.current.on("network", (newNetwork, oldNetwork) => {
+      setNetwork(newNetwork)
+    })
   }, []);
 
   const connectMetaMask = async () => {
@@ -70,6 +82,7 @@ const EtherslProvider = ({ children }) => {
       router.push('/')
     }
   }
+
   return (
     <EthersContext.Provider
       value={{
@@ -78,6 +91,7 @@ const EtherslProvider = ({ children }) => {
         NFTsContract,
         marketContract: MarketContract.current,
         connectMetaMask,
+        network: Network
       }}
     >
       {children}
