@@ -1,4 +1,5 @@
 NaN.NaN.NaN
+NaN.NaN.NaN: Detect network
 NaN.NaN.NaN: connect metamask
 NaN.NaN.NaN: Owned, Gallery, sell function
 NaN.NaN.NaN: import NFT, get NFT list
